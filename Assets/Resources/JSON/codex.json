@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "name": "Characters",
+      "topics": [
+        {
+          "name": "Cabinet",
+          "entries": [
+            {
+              "title": "Lileas Graf",
+              "description": "A strong-willed minister of interior affairs.",
+              "image": "lileas"
+            },
+            {
+              "title": "Tomas Clavin",
+              "description": "The minister of defense, loyal and disciplined.",
+              "image": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "topics": [
+        {
+          "name": "Cities",
+          "entries": [
+            {
+              "title": "Holsord",
+              "description": "Capital of Sordland.",
+              "image": "holsord"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
