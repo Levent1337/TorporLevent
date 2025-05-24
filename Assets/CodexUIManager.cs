@@ -1,39 +1,51 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 using TMPro;
+using System.Collections.Generic;
 
 public class CodexUIManager : MonoBehaviour
 {
+    [Header("Managers")]
     public CodexManager codexManager;
 
+    [Header("Panels")]
     public GameObject codexPanel;
     public GameObject menuPage;
     public GameObject entryPage;
 
-    public Transform categoryContainer;
-    public Transform topicContainer;
-    public Transform entryContainer;
+    [Header("UI Containers")]
+    public GameObject categoryButtonsContainer;
+    public GameObject entryBackButton;
 
-    public GameObject categoryButtonPrefab;
-    public GameObject topicButtonPrefab;
-    public GameObject entryButtonPrefab;
-
+    [Header("UI Elements")]
+    public TMP_Text selectedCategoryTitle;
     public TMP_Text entryTitle;
     public TMP_Text entryDescription;
     public Image entryImage;
-
-    public TMP_Text selectedCategoryTitle;
-    public GameObject topicGroupPrefab;
-
     public Sprite defaultImage;
+
+    [Header("Prefabs")]
+    public GameObject categoryButtonPrefab;
+    public GameObject topicPanelPrefab;
+    public GameObject entryButtonPrefab;
+
+    [Header("Layout Containers")]
+    public Transform categoryContainer;
+    public Transform topicContainer;
+
+    private string currentCategoryName = "Codex";
+    private List<Toggle> activeTopicToggles = new List<Toggle>();
 
     void Start()
     {
         codexPanel.SetActive(false);
         entryPage.SetActive(false);
         menuPage.SetActive(true);
+        entryBackButton.SetActive(false);
+        selectedCategoryTitle.text = currentCategoryName;
+
         GenerateCategories();
+        Debug.Log("Categories loaded: " + codexManager.codexData.categories.Count);
     }
 
     public void ToggleCodex()
@@ -45,91 +57,84 @@ public class CodexUIManager : MonoBehaviour
     {
         foreach (var category in codexManager.codexData.categories)
         {
+            // Create a local copy of the category to avoid closure issues in the listener
+            var localCategory = category;
+
             GameObject button = Instantiate(categoryButtonPrefab, categoryContainer);
+            button.GetComponentInChildren<TMP_Text>().text = localCategory.name;
 
-            TMP_Text label = button.GetComponentInChildren<TMP_Text>();
-            if (label != null)
+            // Assign the onClick handler using the local copy
+            button.GetComponent<Button>().onClick.AddListener(() =>
             {
-                label.text = category.name;
-            }
-            else
-            {
-                Debug.LogWarning("No TMP_Text found in category button prefab!");
-            }
-
-            button.GetComponent<Button>().onClick.AddListener(() => GenerateTopics(category));
+                currentCategoryName = localCategory.name;
+                selectedCategoryTitle.text = localCategory.name;
+                Debug.Log("Category clicked: " + localCategory.name);
+                GenerateTopics(localCategory);
+            });
         }
     }
-
 
 
     void GenerateTopics(Category category)
     {
-        // Clear existing topic groups
-        ClearContainer(topicContainer); // topicContainer = Content of ScrollView
+        Debug.Log("GenerateTopics() was called");
 
-        // Update category title at the top (optional)
-        if (selectedCategoryTitle != null)
-            selectedCategoryTitle.text = category.name;
+        ClearContainer(topicContainer);
+        activeTopicToggles.Clear();
 
         foreach (var topic in category.topics)
         {
-            // Instantiate the TopicGroup prefab under the topic container
-            GameObject topicGroup = Instantiate(topicGroupPrefab, topicContainer);
+            GameObject topicPanel = Instantiate(topicPanelPrefab, topicContainer);
 
-            // Find the Toggle inside the topic group and set its label
-            TMP_Text topicLabel = topicGroup.GetComponentInChildren<TMP_Text>();
-            if (topicLabel != null)
-                topicLabel.text = topic.name;
-
-            // Find the entry container (EntryButtonsContainer) inside this topic group
-            Transform entryContainer = topicGroup.transform.Find("EntryButtonsContainer");
-
-            if (entryContainer == null)
+            // Find required components
+            Toggle topicToggle = topicPanel.transform.Find("TopicToggle")?.GetComponent<Toggle>();
+            if (topicToggle == null)
             {
-                Debug.LogError("EntryButtonsContainer not found in TopicGroup prefab!");
-                continue;
+                Debug.LogError("TopicToggle not found or not a Toggle component!");
             }
 
-            // Instantiate entry buttons for this topic
+            TMP_Text topicLabel = topicToggle.GetComponentInChildren<TMP_Text>();
+            Transform entryButtonsContainer = topicPanel.transform.Find("EntryButtonsContainer");
+
+            // Set default states
+            topicToggle.isOn = false;
+            entryButtonsContainer.gameObject.SetActive(false);
+            topicLabel.text = topic.name;
+
+            // Clear previous listeners for safety
+            topicToggle.onValueChanged.RemoveAllListeners();
+
+            topicToggle.onValueChanged.AddListener((bool isOn) =>
+            {
+                Debug.Log($"Toggle {topic.name} changed to {isOn}");
+                entryButtonsContainer.gameObject.SetActive(isOn);
+
+                if (isOn)
+                {
+                    foreach (var toggle in activeTopicToggles)
+                    {
+                        if (toggle != topicToggle)
+                        {
+                            toggle.isOn = false;
+                        }
+                    }
+                }
+            });
+
+
+            activeTopicToggles.Add(topicToggle);
+
+            // Create entry buttons
             foreach (var entry in topic.entries)
             {
-                GameObject entryButton = Instantiate(entryButtonPrefab, entryContainer);
-                TMP_Text entryText = entryButton.GetComponentInChildren<TMP_Text>();
-                if (entryText != null)
-                    entryText.text = entry.title;
+                GameObject entryButton = Instantiate(entryButtonPrefab, entryButtonsContainer);
+                entryButton.GetComponentInChildren<TMP_Text>().text = entry.title;
 
-                entryButton.GetComponent<Button>().onClick.AddListener(() => ShowEntry(entry));
-            }
-
-            // Collapse entry list by default
-            entryContainer.gameObject.SetActive(false);
-
-            // Hook toggle to show/hide the entries
-            Toggle topicToggle = topicGroup.GetComponentInChildren<Toggle>();
-            if (topicToggle != null)
-            {
-                topicToggle.onValueChanged.AddListener(isOn =>
+                entryButton.GetComponent<Button>().onClick.AddListener(() =>
                 {
-                    entryContainer.gameObject.SetActive(isOn);
+                    ShowEntry(entry);
                 });
             }
-            else
-            {
-                Debug.LogWarning("Toggle not found in TopicGroup prefab.");
-            }
-        }
-    }
-
-    void GenerateEntries(Topic topic)
-    {
-        ClearContainer(entryContainer);
-
-        foreach (var entry in topic.entries)
-        {
-            GameObject button = Instantiate(entryButtonPrefab, entryContainer);
-            button.GetComponentInChildren<Text>().text = entry.title;
-            button.GetComponent<Button>().onClick.AddListener(() => ShowEntry(entry));
         }
     }
 
@@ -140,22 +145,29 @@ public class CodexUIManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(entry.image))
         {
-            Sprite img = Resources.Load<Sprite>("Images/" + entry.image);
-            entryImage.sprite = img != null ? img : defaultImage;
+            Sprite loaded = Resources.Load<Sprite>("Images/" + entry.image);
+            entryImage.sprite = loaded != null ? loaded : defaultImage;
         }
         else
         {
             entryImage.sprite = defaultImage;
         }
 
-        entryPage.SetActive(true);
+        // UI switch
+        selectedCategoryTitle.text = entry.title;
         menuPage.SetActive(false);
+        entryPage.SetActive(true);
+        categoryButtonsContainer.SetActive(false);
+        entryBackButton.SetActive(true);
     }
 
     public void BackToMenu()
     {
         entryPage.SetActive(false);
         menuPage.SetActive(true);
+        categoryButtonsContainer.SetActive(true);
+        entryBackButton.SetActive(false);
+        selectedCategoryTitle.text = currentCategoryName;
     }
 
     void ClearContainer(Transform container)
