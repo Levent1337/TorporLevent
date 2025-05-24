@@ -55,22 +55,40 @@ public class CodexUIManager : MonoBehaviour
 
     void GenerateCategories()
     {
+        bool first = true;
+
         foreach (var category in codexManager.codexData.categories)
         {
-            // Create a local copy of the category to avoid closure issues in the listener
             var localCategory = category;
 
             GameObject button = Instantiate(categoryButtonPrefab, categoryContainer);
             button.GetComponentInChildren<TMP_Text>().text = localCategory.name;
 
-            // Assign the onClick handler using the local copy
             button.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                Debug.Log("Category button clicked: " + localCategory.name);
+                currentCategoryName = localCategory.name;
+                selectedCategoryTitle.text = localCategory.name;
+
+               
+                entryPage.SetActive(false);
+                menuPage.SetActive(true);
+                entryBackButton.SetActive(false);
+                Debug.Log("Showing categoryButtonsContainer — from gemerate categories");
+                categoryButtonsContainer.SetActive(true);
+
+                GenerateTopics(localCategory);
+            });
+
+
+
+            if (first)
             {
                 currentCategoryName = localCategory.name;
                 selectedCategoryTitle.text = localCategory.name;
-                Debug.Log("Category clicked: " + localCategory.name);
                 GenerateTopics(localCategory);
-            });
+                first = false;
+            }
         }
     }
 
@@ -140,41 +158,80 @@ public class CodexUIManager : MonoBehaviour
 
     void ShowEntry(Entry entry)
     {
+        Debug.Log("ShowEntry() called for entry: " + entry.title);
+
+        // Set text fields
         entryTitle.text = entry.title;
         entryDescription.text = entry.description;
+        selectedCategoryTitle.text = entry.title;
+
+        // Try to load the image
+        Debug.Log("Trying to load image: " + entry.image);
+        Sprite loaded = null;
 
         if (!string.IsNullOrEmpty(entry.image))
         {
-            Sprite loaded = Resources.Load<Sprite>("Images/" + entry.image);
-            entryImage.sprite = loaded != null ? loaded : defaultImage;
-        }
-        else
-        {
-            entryImage.sprite = defaultImage;
+            loaded = Resources.Load<Sprite>("Images/" + entry.image);
+            Debug.Log(loaded != null ? " Loaded image: " + entry.image : " Failed to load: " + entry.image);
         }
 
-        // UI switch
-        selectedCategoryTitle.text = entry.title;
+        // Assign sprite (use default if load failed)
+        entryImage.sprite = loaded != null ? loaded : defaultImage;
+        Debug.Log(entryImage.sprite != null ? " Final image assigned" : " entryImage.sprite is null!");
+
+        // Hide all category buttons inside the container
+        foreach (Transform child in categoryButtonsContainer.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+
+        // Show the back button
+        entryBackButton.SetActive(true); 
+
+        // Switch UI panels
         menuPage.SetActive(false);
         entryPage.SetActive(true);
-        categoryButtonsContainer.SetActive(false);
-        entryBackButton.SetActive(true);
+
+        Debug.Log("EntryPage activated, category buttons hidden, back button visible");
     }
+
+
 
     public void BackToMenu()
     {
         entryPage.SetActive(false);
         menuPage.SetActive(true);
-        categoryButtonsContainer.SetActive(true);
-        entryBackButton.SetActive(false);
+
+        foreach (Transform child in categoryButtonsContainer.transform)
+        {
+            child.gameObject.SetActive(true);
+        }
+        entryBackButton.SetActive(false); // just in case
+
         selectedCategoryTitle.text = currentCategoryName;
+        Debug.Log("Returned to menu, category buttons visible");
     }
+
 
     void ClearContainer(Transform container)
     {
         foreach (Transform child in container)
         {
+            // Clean up listeners before destroying
+            var toggle = child.GetComponentInChildren<Toggle>();
+            if (toggle != null)
+            {
+                toggle.onValueChanged.RemoveAllListeners();
+            }
+
+            var buttons = child.GetComponentsInChildren<Button>();
+            foreach (var button in buttons)
+            {
+                button.onClick.RemoveAllListeners();
+            }
+
             Destroy(child.gameObject);
         }
     }
+
 }

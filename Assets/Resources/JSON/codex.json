@@ -1,39 +1,84 @@
 {
-  "categories": [
-    {
-      "name": "Characters",
-      "topics": [
+    "categories": [
         {
-          "name": "Cabinet",
-          "entries": [
-            {
-              "title": "Lileas Graf",
-              "description": "A strong-willed minister of interior affairs.",
-              "image": "lileas"
-            },
-            {
-              "title": "Tomas Clavin",
-              "description": "The minister of defense, loyal and disciplined.",
-              "image": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Locations",
-      "topics": [
+            "name": "Characters",
+            "topics": [
+                {
+                    "name": "Cabinet",
+                    "entries": [
+                        {
+                            "title": "Lileas Graf",
+                            "description": "Minister of Interior Affairs. Strong-willed and influential.",
+                            "image": "lileas"
+                        },
+                        {
+                            "title": "Tomas Clavin",
+                            "description": "Minister of Defense. Disciplined and loyal.",
+                            "image": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "World Leaders",
+                    "entries": [
+                        {
+                            "title": "President Anton Rayne",
+                            "description": "President of Sordland. Facing political challenges.",
+                            "image": "rayne"
+                        }
+                    ]
+                }
+            ]
+        },
         {
-          "name": "Cities",
-          "entries": [
-            {
-              "title": "Holsord",
-              "description": "Capital of Sordland.",
-              "image": "holsord"
-            }
-          ]
+            "name": "History",
+            "topics": [
+                {
+                    "name": "Founding",
+                    "entries": [
+                        {
+                            "title": "Sordish Revolution",
+                            "description": "A major revolution that reshaped the nation's structure.",
+                            "image": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Locations",
+            "topics": [
+                {
+                    "name": "Cities",
+                    "entries": [
+                        {
+                            "title": "Holsord",
+                            "description": "Capital of Sordland. Political and cultural center.",
+                            "image": "holsord"
+                        },
+                        {
+                            "title": "Deyr",
+                            "description": "Coastal city known for its naval base.",
+                            "image": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Organizations",
+            "topics": [
+                {
+                    "name": "Military",
+                    "entries": [
+                        {
+                            "title": "Sordish Armed Forces",
+                            "description": "The national military force of Sordland.",
+                            "image": "military"
+                        }
+                    ]
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
