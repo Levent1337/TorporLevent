@@ -16,6 +16,6 @@ MonoBehaviour:
   maxHealth: 2
   attack: 1
   defense: 0
-  attackRange: 1
+  attackRange: 2
   shapePrefab: {fileID: 7786359291768452591, guid: 820d329f2500ec84994c91b9822ec8d4, type: 3}
   tokenColor: {r: 1, g: 0, b: 0, a: 1}

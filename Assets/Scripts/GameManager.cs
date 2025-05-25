@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     }
 
     public GamePhase CurrentPhase { get; private set; } = GamePhase.Placement;
+    private Dictionary<int, List<Token>> activeTokensByPlayer = new Dictionary<int, List<Token>>();
 
     [Header("Setup")]
     public GridManager gridManager;
@@ -88,9 +89,11 @@ public class GameManager : MonoBehaviour
         if (CurrentPhase != GamePhase.Placement)
             return;
 
-        if (currentPlayerIndex >= players.Count) return;
+        if (currentPlayerIndex >= players.Count)
+            return;
 
         var currentPlayer = players[currentPlayerIndex];
+
         if (currentTokenIndex >= currentPlayer.tokensToPlace.Count)
             return;
 
@@ -113,15 +116,24 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        // Instantiate and initialize the token
         GameObject tokenGO = Instantiate(tokenPrefab, tile.transform.position, Quaternion.identity);
         Token token = tokenGO.GetComponent<Token>();
-        token.Initialize(data, currentPlayerIndex + 1); // ownerId = 1-based
+        int ownerId = currentPlayerIndex + 1;
+        token.Initialize(data, ownerId);
         tile.PlaceToken(token);
+
+        // Track this token for the player
+        if (!activeTokensByPlayer.ContainsKey(ownerId))
+            activeTokensByPlayer[ownerId] = new List<Token>();
+
+        activeTokensByPlayer[ownerId].Add(token);
 
         Debug.Log($"{currentPlayer.playerName} placed {data.tokenName}");
 
         currentTokenIndex++;
 
+        // Check if current player is done
         if (currentTokenIndex >= currentPlayer.tokensToPlace.Count)
         {
             currentTokenIndex = 0;
@@ -142,6 +154,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"{currentPlayer.playerName}, place your next token.");
         }
     }
+
 
     void StartCombatPhase()
     {
@@ -165,16 +178,19 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
-        currentPlayerIndex++;
-        if (currentPlayerIndex >= players.Count)
-            currentPlayerIndex = 0;
+        do
+        {
+            currentPlayerIndex++;
+            if (currentPlayerIndex >= players.Count)
+                currentPlayerIndex = 0;
+        }
+        while (!PlayerHasTokens(CurrentPlayerId));
 
         turnNumber++;
         actionPoints = 4;
 
         Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
     }
-
     public bool IsPlayerTurn(int playerId)
     {
         return playerId == CurrentPlayerId;
@@ -186,5 +202,39 @@ public class GameManager : MonoBehaviour
     {
         CurrentPhase = GamePhase.GameOver;
         Debug.Log($"Game Over! {winnerName} wins!");
+    }
+    public void OnTokenDeath(Token token)
+    {
+        if (activeTokensByPlayer.ContainsKey(token.ownerId))
+        {
+            activeTokensByPlayer[token.ownerId].Remove(token);
+
+            if (activeTokensByPlayer[token.ownerId].Count == 0)
+            {
+                Debug.Log($"{players[token.ownerId - 1].playerName} has no more tokens.");
+            }
+
+            CheckWinCondition();
+        }
+    }
+    void CheckWinCondition()
+    {
+        List<int> playersWithTokens = new List<int>();
+
+        foreach (var kvp in activeTokensByPlayer)
+        {
+            if (kvp.Value.Count > 0)
+                playersWithTokens.Add(kvp.Key);
+        }
+
+        if (playersWithTokens.Count == 1)
+        {
+            string winnerName = players[playersWithTokens[0] - 1].playerName;
+            EndGame(winnerName);
+        }
+    }
+    private bool PlayerHasTokens(int playerId)
+    {
+        return activeTokensByPlayer.ContainsKey(playerId) && activeTokensByPlayer[playerId].Count > 0;
     }
 }

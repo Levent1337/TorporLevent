@@ -161,6 +161,7 @@ public class Token : MonoBehaviour
         if (current != null)
             current.ClearToken();
 
+        GameManager.Instance.OnTokenDeath(this); 
         Destroy(gameObject);
         Debug.Log($"{name} died.");
     }
