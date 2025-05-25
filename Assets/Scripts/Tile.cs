@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class Tile : MonoBehaviour
@@ -22,5 +21,13 @@ public class Tile : MonoBehaviour
     public void ClearToken()
     {
         occupyingToken = null;
+    }
+
+    void OnMouseDown()
+    {
+        if (!IsOccupied && PlacementController.Instance != null)
+        {
+            PlacementController.Instance.TryPlaceToken(this);
+        }
     }
 }

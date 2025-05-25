@@ -11,7 +11,7 @@ public class GridManager : MonoBehaviour
     public List<Tile> player2StartTiles = new List<Tile>();
     public List<Tile> player3StartTiles = new List<Tile>();
     public List<Tile> player4StartTiles = new List<Tile>();
-    public int numPlayers = 2;
+    [HideInInspector] public int numPlayers = 2;
 
     [Header("Player Zone Colors")]
     public Color player1ZoneColor = new Color(0.3f, 0.6f, 1f); // default blue
@@ -26,6 +26,17 @@ public class GridManager : MonoBehaviour
 
 
     private Tile[,] grid;
+
+
+    public static GridManager Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+            Destroy(gameObject);
+        else
+            Instance = this;
+    }
 
     void Start()
     {
@@ -126,6 +137,13 @@ public class GridManager : MonoBehaviour
         }
 
 
+    }
+    public Tile GetTileAtPosition(Vector3 worldPosition)
+    {
+        int x = Mathf.RoundToInt(worldPosition.x / spacing);
+        int y = Mathf.RoundToInt(worldPosition.z / spacing);
+
+        return GetTileAt(x, y);
     }
 
 
