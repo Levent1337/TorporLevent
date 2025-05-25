@@ -7,9 +7,7 @@ public class Token : MonoBehaviour
 
     public bool IsAlive => currentHealth > 0;
     public bool isDefending = false;
-    public int ownerId; // 1 = Player 1, 2 = Player 2
-
-
+    public int ownerId; // 1 = Player 1, etc.
 
     public void Initialize(TokenData newData, int owner = -1)
     {
@@ -39,15 +37,14 @@ public class Token : MonoBehaviour
         }
     }
 
-
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
         currentHealth = Mathf.Max(currentHealth, 0);
     }
+
     public void SetSelected(bool selected)
     {
-        // Optional: show outline, change color, etc.
         Renderer rend = GetComponentInChildren<Renderer>();
         if (rend != null)
         {
@@ -57,37 +54,76 @@ public class Token : MonoBehaviour
 
     public void TryInteractWith(Tile targetTile)
     {
-        if (!TurnManager.Instance.IsPlayerTurn(ownerId)) return;
-        if (TurnManager.Instance.ActionPoints <= 0) return;
+        if (!GameManager.Instance.IsPlayerTurn(ownerId))
+        {
+            Debug.Log("Not your turn.");
+            return;
+        }
+
+        if (GameManager.Instance.actionPoints <= 0)
+        {
+            Debug.Log("No AP left.");
+            return;
+        }
 
         if (!targetTile.IsOccupied && IsAdjacentTo(targetTile))
         {
+            Debug.Log("Trying to move to empty tile.");
             MoveTo(targetTile);
         }
         else if (targetTile.IsOccupied && IsAdjacentTo(targetTile))
         {
             Token enemy = targetTile.occupyingToken;
-            if (enemy != null && enemy.ownerId != ownerId && !enemy.isDefending)
+            Debug.Log($"Attempting attack on tile with token: {enemy?.name}, ownerId = {enemy?.ownerId}");
+
+            if (enemy != null && enemy.ownerId != ownerId)
             {
-                Attack(enemy);
+                if (!enemy.isDefending)
+                {
+                    Debug.Log("Attacking enemy!");
+                    Attack(enemy);
+                }
+                else
+                {
+                    Debug.Log("Enemy is defending. No attack.");
+                }
             }
+            else
+            {
+                Debug.Log("Target is not an enemy.");
+            }
+        }
+        else
+        {
+            Debug.Log("Target not valid for interaction.");
         }
     }
 
+
     bool IsAdjacentTo(Tile tile)
     {
-        Vector2Int diff = tile.gridPosition - CurrentTile().gridPosition;
+        Tile current = CurrentTile();
+        if (current == null) return false;
+
+        Vector2Int diff = tile.gridPosition - current.gridPosition;
         return Mathf.Abs(diff.x) + Mathf.Abs(diff.y) == 1;
     }
 
-    public void MoveTo(Tile targetTile)
+    public void MoveTo(Tile targetTile, bool consumeAP = true)
     {
-        CurrentTile().ClearToken();
+        Tile current = CurrentTile();
+        if (current != null)
+            current.ClearToken();
+
         transform.position = targetTile.transform.position;
         targetTile.PlaceToken(this);
-        TokenSelector.Instance.ConsumeAP();
+
+        if (consumeAP)
+            TokenSelector.Instance.ConsumeAP();
+
         Debug.Log($"{name} moved.");
     }
+
 
     public void Attack(Token defender)
     {
@@ -97,14 +133,20 @@ public class Token : MonoBehaviour
 
         Debug.Log($"{name} attacked {defender.name} for {damage} damage.");
 
-        if (!defender.IsAlive)
+        bool defenderDied = !defender.IsAlive;
+        Tile defenderTile = defender.CurrentTile();
+
+        if (defenderDied)
         {
             defender.Die();
-            MoveTo(defender.CurrentTile()); // attacker moves in
+
+            if (defenderTile != null)
+                MoveTo(defenderTile, consumeAP: false); 
         }
 
-        TokenSelector.Instance.ConsumeAP();
+        TokenSelector.Instance.ConsumeAP(); 
     }
+
 
     public void Defend()
     {
@@ -115,13 +157,19 @@ public class Token : MonoBehaviour
 
     public void Die()
     {
-        CurrentTile().ClearToken();
+        Tile current = CurrentTile();
+        if (current != null)
+            current.ClearToken();
+
         Destroy(gameObject);
         Debug.Log($"{name} died.");
     }
 
     public Tile CurrentTile()
     {
-        return GridManager.Instance.GetTileAtPosition(transform.position);
+        Tile tile = GridManager.Instance.GetTileAtPosition(transform.position);
+        if (tile == null)
+            Debug.LogWarning($"{name} is not on a valid tile!");
+        return tile;
     }
 }

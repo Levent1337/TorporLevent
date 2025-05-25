@@ -119,51 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &262556616
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 262556618}
-  - component: {fileID: 262556617}
-  m_Layer: 0
-  m_Name: TurnManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &262556617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 262556616}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 778b09c8cea9bea4aaa46b101d01d5cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  totalPlayers: 2
---- !u!4 &262556618
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 262556616}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1057288399
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,71 +240,6 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
---- !u!1 &1102583674
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1102583676}
-  - component: {fileID: 1102583675}
-  m_Layer: 0
-  m_Name: PlacementController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1102583675
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1102583674}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8183c02419ca60a478dcf014028de3de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridManager: {fileID: 1156597509}
-  tokenPrefab: {fileID: 1905317818780163437, guid: cc699797b35393441a5fd4652196430a, type: 3}
-  players:
-  - playerName: Player1
-    tokensToPlace:
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    allowedTiles: []
-  - playerName: Player2
-    tokensToPlace:
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    allowedTiles: []
-  - playerName: Player3
-    tokensToPlace:
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
-    allowedTiles: []
---- !u!4 &1102583676
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1102583674}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1156597507
 GameObject:
   m_ObjectHideFlags: 0
@@ -575,6 +465,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17470144470ff0c4aa27d3da8828765b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridManager: {fileID: 1156597509}
+  tokenPrefab: {fileID: 1905317818780163437, guid: cc699797b35393441a5fd4652196430a, type: 3}
+  players:
+  - playerName: player1
+    tokensToPlace:
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    allowedTiles: []
+  - playerName: player2
+    tokensToPlace:
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    allowedTiles: []
+  - playerName: player3
+    tokensToPlace:
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    - {fileID: 11400000, guid: b6af1856d0331e64ba2d04612c173556, type: 2}
+    allowedTiles: []
+  actionPoints: 4
 --- !u!4 &1730541917
 Transform:
   m_ObjectHideFlags: 0
@@ -673,7 +585,5 @@ SceneRoots:
   - {fileID: 1057288401}
   - {fileID: 2012466946}
   - {fileID: 1156597508}
-  - {fileID: 1102583676}
   - {fileID: 1730541917}
-  - {fileID: 262556618}
   - {fileID: 1795372047}

@@ -16,6 +16,9 @@ public class TokenSelector : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.CurrentPhase != GameManager.GamePhase.Combat)
+            return;
+
         HandleInput();
     }
 
@@ -32,29 +35,51 @@ public class TokenSelector : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                Token token = hit.collider.GetComponentInParent<Token>();
-                if (token != null)
+                Token clickedToken = hit.collider.GetComponentInParent<Token>();
+                Tile clickedTile = hit.collider.GetComponentInParent<Tile>();
+
+                if (clickedToken != null)
                 {
-                    TrySelectToken(token);
-                    return;
+                    if (selectedToken != null && clickedToken != selectedToken)
+                    {
+                        // Try interacting with tile under enemy token
+                        Tile enemyTile = clickedToken.CurrentTile();
+                        if (enemyTile != null)
+                        {
+                            selectedToken.TryInteractWith(enemyTile);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Try selecting your own token
+                        TrySelectToken(clickedToken);
+                        return;
+                    }
                 }
 
-                Tile tile = hit.collider.GetComponent<Tile>();
-                if (tile != null && selectedToken != null)
+                if (clickedTile != null && selectedToken != null)
                 {
-                    selectedToken.TryInteractWith(tile);
+                    selectedToken.TryInteractWith(clickedTile);
                 }
             }
         }
     }
 
+
     void TrySelectToken(Token token)
     {
-        if (!TurnManager.Instance.IsPlayerTurn(token.ownerId)) return;
+        if (!GameManager.Instance.IsPlayerTurn(token.ownerId))
+        {
+            Debug.Log("Can't select another player's token.");
+            return;
+        }
 
         DeselectToken();
+
         selectedToken = token;
         selectedToken.SetSelected(true);
+        Debug.Log($"Selected token: {token.name}");
     }
 
     void DeselectToken()
@@ -63,13 +88,15 @@ public class TokenSelector : MonoBehaviour
         {
             selectedToken.SetSelected(false);
             selectedToken = null;
+            Debug.Log("Deselected token.");
         }
     }
 
     public void ConsumeAP()
     {
-        TurnManager.Instance.UseActionPoint();
-        if (TurnManager.Instance.ActionPoints <= 0)
+        GameManager.Instance.UseActionPoint();
+        if (GameManager.Instance.CurrentPhase == GameManager.GamePhase.Combat &&
+            GameManager.Instance.actionPoints <= 0)
         {
             DeselectToken();
         }

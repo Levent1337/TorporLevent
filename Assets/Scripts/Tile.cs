@@ -25,9 +25,9 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!IsOccupied && PlacementController.Instance != null)
+        if (!IsOccupied && GameManager.Instance.CurrentPhase == GameManager.GamePhase.Placement)
         {
-            PlacementController.Instance.TryPlaceToken(this);
+            GameManager.Instance.TryPlaceToken(this);
         }
     }
 }

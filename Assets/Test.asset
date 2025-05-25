@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Test
   m_EditorClassIdentifier: 
   tokenName: 
-  maxHealth: 1
+  maxHealth: 2
   attack: 1
   defense: 0
   attackRange: 1
