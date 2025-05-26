@@ -27,6 +27,21 @@
                             "image": "rayne"
                         }
                     ]
+                },
+                {
+                    "name": "Opposition",
+                    "entries": [
+                        {
+                            "title": "Marcel Koronti",
+                            "description": "Leader of the opposition party. A cunning political strategist.",
+                            "image": ""
+                        },
+                        {
+                            "title": "Iosef Lancea",
+                            "description": "A charismatic populist challenging the current administration.",
+                            "image": ""
+                        }
+                    ]
                 }
             ]
         },
@@ -39,6 +54,21 @@
                         {
                             "title": "Sordish Revolution",
                             "description": "A major revolution that reshaped the nation's structure.",
+                            "image": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Civil Unrest",
+                    "entries": [
+                        {
+                            "title": "1923 Riots",
+                            "description": "A series of violent protests demanding democratic reform.",
+                            "image": ""
+                        },
+                        {
+                            "title": "The Bunker Speech",
+                            "description": "A turning point in public perception of the government.",
                             "image": ""
                         }
                     ]
@@ -62,6 +92,21 @@
                             "image": ""
                         }
                     ]
+                },
+                {
+                    "name": "Regions",
+                    "entries": [
+                        {
+                            "title": "Greater Varnland",
+                            "description": "A rugged mountainous area home to numerous minority groups.",
+                            "image": ""
+                        },
+                        {
+                            "title": "Narbel Plains",
+                            "description": "A fertile agricultural zone critical to Sordland's food supply.",
+                            "image": ""
+                        }
+                    ]
                 }
             ]
         },
@@ -75,6 +120,21 @@
                             "title": "Sordish Armed Forces",
                             "description": "The national military force of Sordland.",
                             "image": "military"
+                        }
+                    ]
+                },
+                {
+                    "name": "Agencies",
+                    "entries": [
+                        {
+                            "title": "General Intelligence Directorate",
+                            "description": "Sordland's primary intelligence agency, shrouded in secrecy.",
+                            "image": ""
+                        },
+                        {
+                            "title": "Sordish Broadcasting Authority",
+                            "description": "The state-run media outlet tasked with official communications.",
+                            "image": ""
                         }
                     ]
                 }
