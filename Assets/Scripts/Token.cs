@@ -15,10 +15,21 @@ public class Token : MonoBehaviour
 
     public GameObject hoverUI;
     private TextMeshProUGUI statsText;
+    public GameObject defendIndicatorPrefab; // assign in inspector
+    private GameObject defendIndicatorInstance;
+
 
     void Start()
     {
         currentHealth = data.maxHealth;
+
+        if (defendIndicatorPrefab != null)
+        {
+            defendIndicatorInstance = Instantiate(defendIndicatorPrefab, transform);
+            defendIndicatorInstance.transform.localPosition = new Vector3(0, 2.0f, 0); // adjust height above token
+            defendIndicatorInstance.SetActive(false);
+        }
+
 
         // Instantiate and configure hover UI
         hoverUI = Instantiate(hoverUI, transform);
@@ -160,6 +171,10 @@ public class Token : MonoBehaviour
     {
         isDefending = true;
         Debug.Log($"{name} is defending.");
+
+        if (defendIndicatorInstance != null)
+            defendIndicatorInstance.SetActive(true);
+
         TokenSelector.Instance.ConsumeAP();
     }
 
@@ -167,8 +182,10 @@ public class Token : MonoBehaviour
     {
         isDefending = false;
         Debug.Log($"{name} is no longer defending.");
-    }
 
+        if (defendIndicatorInstance != null)
+            defendIndicatorInstance.SetActive(false);
+    }
     public void Die()
     {
         Tile current = CurrentTile();

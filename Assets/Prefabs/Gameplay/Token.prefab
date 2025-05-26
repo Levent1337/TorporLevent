@@ -50,6 +50,7 @@ MonoBehaviour:
   isDefending: 0
   ownerId: 0
   hoverUI: {fileID: 4506020157993237030, guid: 989229a0b067b2646ac287c09c6e49fc, type: 3}
+  defendIndicatorPrefab: {fileID: 36837505543384938, guid: b1732c116c9933c47b750aa692b49a59, type: 3}
 --- !u!65 &-840984147258454363
 BoxCollider:
   m_ObjectHideFlags: 0

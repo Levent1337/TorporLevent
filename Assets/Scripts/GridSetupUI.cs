@@ -26,9 +26,9 @@ public class GridSetupUI : MonoBehaviour
         startButton.onClick.AddListener(ApplySettingsAndStart);
 
         // Default values
-        widthInput.text = "12";
-        heightInput.text = "12";
-        zoneWidthInput.text = "3";
+        widthInput.text = "10";
+        heightInput.text = "10";
+        zoneWidthInput.text = "4";
         zoneHeightInput.text = "2";
         playerCountInput.text = "2";
         tokensPerPlayerInput.text = "4";
