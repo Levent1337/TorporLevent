@@ -6,6 +6,10 @@ public class GameplayUIController : MonoBehaviour
 {
     public TextMeshProUGUI turnIndicatorText;
     public TextMeshProUGUI apIndicatorText;
+    public TextMeshProUGUI turnCounterText;
+    public TextMeshProUGUI winnerText;
+    public GameObject winnerPanel;
+
     public void OnDefendButtonPressed()
     {
         Token selected = TokenSelector.Instance?.GetSelectedToken();
@@ -34,4 +38,22 @@ public class GameplayUIController : MonoBehaviour
         if (apIndicatorText != null)
             apIndicatorText.text = $"AP: {currentAP}";
     }
+    public void UpdateTurnCounter(int turnNumber)
+    {
+        if (turnCounterText != null)
+            turnCounterText.text = $"Round: {turnNumber}";
+    }
+    public void ShowWinner(string playerName)
+    {
+        if (winnerPanel != null)
+            winnerPanel.SetActive(true); // Show the panel
+
+        if (winnerText != null)
+            winnerText.text = $"Winner: {playerName}!";
+    }
+
+
+
+
+
 }

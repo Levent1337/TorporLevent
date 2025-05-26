@@ -165,6 +165,7 @@ else
         Debug.Log($"Combat phase started. Player {CurrentPlayerId}'s turn.");
         UpdateTurnUI();
         UpdateAPUI();
+        UpdateTurnCounterUI();
     }
 
     public void UseActionPoint()
@@ -179,22 +180,29 @@ else
     {
         TokenSelector.Instance?.ForceDeselect();
 
+        int previousPlayerIndex = currentPlayerIndex;
+
         do
         {
             currentPlayerIndex++;
-            if (currentPlayerIndex >= players.Count)
-                currentPlayerIndex = 0;
-        }
-        while (!PlayerHasTokens(CurrentPlayerId));
 
-        turnNumber++;
+            // If we completed a full round, reset to first player and increment turn count
+            if (currentPlayerIndex >= players.Count)
+            {
+                currentPlayerIndex = 0;
+                turnNumber++; 
+                UpdateTurnCounterUI(); 
+            }
+        }
+        while (!PlayerHasTokens(CurrentPlayerId)); // Skip players with no tokens
+
         actionPoints = 4;
         ResetDefenders(CurrentPlayerId);
 
-        Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
         UpdateTurnUI();
         UpdateAPUI();
     }
+
 
     public void ResetDefenders(int playerId)
     {
@@ -212,6 +220,8 @@ else
     {
         CurrentPhase = GamePhase.GameOver;
         Debug.Log($"Game Over! {winnerName} wins!");
+
+        FindFirstObjectByType<GameplayUIController>()?.ShowWinner(winnerName);
     }
 
     public void OnTokenDeath(Token token)
@@ -259,4 +269,9 @@ else
     {
         FindFirstObjectByType<GameplayUIController>()?.UpdateAPIndicator(actionPoints);
     }
+    private void UpdateTurnCounterUI()
+    {
+        FindFirstObjectByType<GameplayUIController>()?.UpdateTurnCounter(turnNumber);
+    }
+
 }
