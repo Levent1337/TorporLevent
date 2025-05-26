@@ -1,6 +1,6 @@
 using UnityEngine;
 using TMPro;
-
+using System.Collections;
 public class Token : MonoBehaviour
 {
     public TokenData data;
@@ -141,6 +141,7 @@ public class Token : MonoBehaviour
         }
 
         TokenSelector.Instance.ConsumeAP();
+
     }
 
     public void TakeDamage(int amount)
@@ -152,6 +153,7 @@ public class Token : MonoBehaviour
         currentHealth = Mathf.Max(currentHealth, 0);
 
         Debug.Log($"{name} took {damage} damage (raw {amount}, defense {actualDefense})");
+        StartCoroutine(FlashDamageEffect());
     }
 
     public void Defend()
@@ -214,6 +216,19 @@ public class Token : MonoBehaviour
     private Color DarkenColor(Color original, float factor)
     {
         return new Color(original.r * factor, original.g * factor, original.b * factor, original.a);
+    }
+    private IEnumerator FlashDamageEffect()
+    {
+        if (rend != null)
+        {
+            Color original = rend.material.color;
+            Color flashColor = original * 0.5f; // darker
+            rend.material.color = flashColor;
+
+            yield return new WaitForSeconds(0.15f);
+
+            rend.material.color = original;
+        }
     }
 }
 
