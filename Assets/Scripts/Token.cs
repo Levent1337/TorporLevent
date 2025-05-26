@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class Token : MonoBehaviour
 {
@@ -7,7 +8,25 @@ public class Token : MonoBehaviour
 
     public bool IsAlive => currentHealth > 0;
     public bool isDefending = false;
-    public int ownerId; // 1 = Player 1, etc.
+    public int ownerId;
+
+    private Renderer rend;
+    private Color originalColor;
+
+    public GameObject hoverUI;
+    private TextMeshProUGUI statsText;
+
+    void Start()
+    {
+        currentHealth = data.maxHealth;
+
+        // Instantiate and configure hover UI
+        hoverUI = Instantiate(hoverUI, transform);
+        hoverUI.transform.localPosition = new Vector3(0, 2.5f, 0);
+        hoverUI.SetActive(false);
+
+        statsText = hoverUI.GetComponentInChildren<TextMeshProUGUI>();
+    }
 
     public void Initialize(TokenData newData, int owner = -1)
     {
@@ -27,9 +46,15 @@ public class Token : MonoBehaviour
             GameObject shape = Instantiate(data.shapePrefab, transform);
             shape.transform.localPosition = Vector3.zero;
 
-            Renderer rend = shape.GetComponentInChildren<Renderer>();
+            rend = shape.GetComponentInChildren<Renderer>();
             if (rend != null)
-                rend.material.color = data.tokenColor;
+            {
+                rend.material = new Material(rend.material);
+                Color baseColor = GridManager.Instance.GetPlayerColor(ownerId);
+                Color playerColor = DarkenColor(baseColor, 0.6f);
+                rend.material.color = playerColor;
+                originalColor = playerColor;
+            }
         }
         else
         {
@@ -37,24 +62,11 @@ public class Token : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int amount)
-    {
-        int actualDefense = isDefending ? data.defense * 2 : data.defense;
-        int rawDamage = amount - actualDefense;
-        int damage = Mathf.Max(rawDamage, 0);
-        currentHealth -= damage;
-        currentHealth = Mathf.Max(currentHealth, 0);
-
-        Debug.Log($"{name} took {damage} damage (raw {amount}, defense {actualDefense})");
-    }
-
-
     public void SetSelected(bool selected)
     {
-        Renderer rend = GetComponentInChildren<Renderer>();
         if (rend != null)
         {
-            rend.material.color = selected ? Color.yellow : data.tokenColor;
+            rend.material.color = selected ? Color.yellow : originalColor;
         }
     }
 
@@ -65,6 +77,7 @@ public class Token : MonoBehaviour
             Debug.Log($"{name} is defending and cannot act.");
             return;
         }
+
         if (!GameManager.Instance.IsPlayerTurn(ownerId))
         {
             Debug.Log("Not your turn.");
@@ -85,28 +98,16 @@ public class Token : MonoBehaviour
         else if (targetTile.IsOccupied && IsAdjacentTo(targetTile))
         {
             Token enemy = targetTile.occupyingToken;
-            Debug.Log($"Attempting attack on tile with token: {enemy?.name}, ownerId = {enemy?.ownerId}");
-
             if (enemy != null && enemy.ownerId != ownerId)
             {
                 Debug.Log("Attacking enemy!");
-                Attack(enemy); // Let the damage logic handle defending
+                Attack(enemy);
             }
         }
         else
         {
             Debug.Log("Target not valid for interaction.");
         }
-    }
-
-
-    bool IsAdjacentTo(Tile tile)
-    {
-        Tile current = CurrentTile();
-        if (current == null) return false;
-
-        Vector2Int diff = tile.gridPosition - current.gridPosition;
-        return Mathf.Abs(diff.x) + Mathf.Abs(diff.y) == 1;
     }
 
     public void MoveTo(Tile targetTile, bool consumeAP = true)
@@ -124,11 +125,9 @@ public class Token : MonoBehaviour
         Debug.Log($"{name} moved.");
     }
 
-
     public void Attack(Token defender)
     {
-        defender.TakeDamage(data.attack); // just pass attack stat!
-
+        defender.TakeDamage(data.attack);
         Debug.Log($"{name} attacked {defender.name} with {data.attack} attack.");
 
         bool defenderDied = !defender.IsAlive;
@@ -144,7 +143,16 @@ public class Token : MonoBehaviour
         TokenSelector.Instance.ConsumeAP();
     }
 
+    public void TakeDamage(int amount)
+    {
+        int actualDefense = isDefending ? data.defense * 2 : data.defense;
+        int rawDamage = amount - actualDefense;
+        int damage = Mathf.Max(rawDamage, 0);
+        currentHealth -= damage;
+        currentHealth = Mathf.Max(currentHealth, 0);
 
+        Debug.Log($"{name} took {damage} damage (raw {amount}, defense {actualDefense})");
+    }
 
     public void Defend()
     {
@@ -153,14 +161,21 @@ public class Token : MonoBehaviour
         TokenSelector.Instance.ConsumeAP();
     }
 
+    public void ResetDefending()
+    {
+        isDefending = false;
+        Debug.Log($"{name} is no longer defending.");
+    }
+
     public void Die()
     {
         Tile current = CurrentTile();
         if (current != null)
             current.ClearToken();
 
-        GameManager.Instance.OnTokenDeath(this); 
+        GameManager.Instance.OnTokenDeath(this);
         Destroy(gameObject);
+
         Debug.Log($"{name} died.");
     }
 
@@ -171,9 +186,34 @@ public class Token : MonoBehaviour
             Debug.LogWarning($"{name} is not on a valid tile!");
         return tile;
     }
-    public void ResetDefending()
+
+    bool IsAdjacentTo(Tile tile)
     {
-        isDefending = false;
-        Debug.Log($"{name} is no longer defending.");
+        Tile current = CurrentTile();
+        if (current == null) return false;
+
+        Vector2Int diff = tile.gridPosition - current.gridPosition;
+        return Mathf.Abs(diff.x) + Mathf.Abs(diff.y) == 1;
+    }
+
+    void OnMouseEnter()
+    {
+        if (statsText != null)
+        {
+            string stats = $"HP: {currentHealth}\nATK: {data.attack}\nDEF: {(isDefending ? data.defense * 2 : data.defense)}";
+            statsText.text = stats;
+            hoverUI.SetActive(true);
+        }
+    }
+
+    void OnMouseExit()
+    {
+        if (hoverUI != null)
+            hoverUI.SetActive(false);
+    }
+    private Color DarkenColor(Color original, float factor)
+    {
+        return new Color(original.r * factor, original.g * factor, original.b * factor, original.a);
     }
 }
+

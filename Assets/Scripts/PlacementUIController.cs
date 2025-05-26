@@ -11,24 +11,16 @@ public class PlacementUIController : MonoBehaviour
     public TokenData attackTokenData;
     public TokenData defenseTokenData;
 
-    private bool wasVisible = false;
-
-
     void Start()
     {
         attackTokenButton.onClick.AddListener(() => SelectToken(attackTokenData));
         defenseTokenButton.onClick.AddListener(() => SelectToken(defenseTokenData));
     }
 
-
     void Update()
     {
-        bool shouldBeVisible = GameManager.Instance.CurrentPhase == GameManager.GamePhase.Placement;
-        if (wasVisible != shouldBeVisible)
-        {
-            gameObject.SetActive(shouldBeVisible);
-            wasVisible = shouldBeVisible;
-        }
+        // Only show buttons during placement phase
+        gameObject.SetActive(GameManager.Instance.CurrentPhase == GameManager.GamePhase.Placement);
     }
 
     void SelectToken(TokenData tokenData)

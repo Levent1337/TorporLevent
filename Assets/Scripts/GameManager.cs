@@ -24,7 +24,6 @@ public class GameManager : MonoBehaviour
     {
         public string playerName;
         public int tokensToPlace = 3;
-        public Color playerColor = Color.white;
         [HideInInspector] public List<TokenData> tokensPlaced = new List<TokenData>();
         [HideInInspector] public List<Tile> allowedTiles;
     }
@@ -71,10 +70,7 @@ public class GameManager : MonoBehaviour
 
     public void TryPlaceToken(Tile tile)
     {
-        if (CurrentPhase != GamePhase.Placement)
-            return;
-
-        if (currentPlayerIndex >= players.Count)
+        if (CurrentPhase != GamePhase.Placement || currentPlayerIndex >= players.Count)
             return;
 
         var currentPlayer = players[currentPlayerIndex];
@@ -103,7 +99,6 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-       
         if (tokenPrefab == null)
         {
             Debug.LogError("tokenPrefab is null in GameManager!");
@@ -111,34 +106,20 @@ public class GameManager : MonoBehaviour
         }
 
         GameObject tokenGO = Instantiate(tokenPrefab, tile.transform.position, Quaternion.identity);
-        Debug.Log("Spawned tokenGO: " + tokenGO.name);
-        Debug.Log("Searching for Token component...");
+        if (tokenGO == null)
+        {
+            Debug.LogError("Failed to instantiate tokenPrefab!");
+            return;
+        }
 
-        Token token = tokenGO.GetComponent<Token>();
+        Token token = tokenGO.GetComponent<Token>() ?? tokenGO.GetComponentInChildren<Token>();
         if (token == null)
         {
-            token = tokenGO.GetComponentInChildren<Token>();
-            if (token == null)
-            {
-                Debug.LogError("NO TOKEN SCRIPT FOUND ON prefab or any children.");
-                return;
-            }
-            else
-            {
-                Debug.Log("Token script found on a child.");
-            }
-        }
-        else
-        {
-            Debug.Log("Token script found on root.");
+            Debug.LogError("Token script is missing on the instantiated prefab or its children.");
+            return;
         }
 
         int ownerId = currentPlayerIndex + 1;
-        Color baseColor = currentPlayer.playerColor;
-        Color darkerColor = baseColor * 0.6f;
-        darkerColor.a = 1f;
-        selectedTokenData.tokenColor = darkerColor;
-
         token.Initialize(selectedTokenData, ownerId);
         tile.PlaceToken(token);
 
@@ -169,7 +150,6 @@ public class GameManager : MonoBehaviour
             Debug.Log($"{currentPlayer.playerName}, place your next token.");
         }
     }
-
 
     void StartCombatPhase()
     {
@@ -202,8 +182,8 @@ public class GameManager : MonoBehaviour
 
         turnNumber++;
         actionPoints = 4;
-
         ResetDefenders(CurrentPlayerId);
+
         Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
     }
 

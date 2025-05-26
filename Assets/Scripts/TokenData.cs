@@ -9,7 +9,7 @@ public class TokenData : ScriptableObject
     public int maxHealth;
     public int attack;
     public int defense;
-    public int attackRange;
+    
 
     [Header("Visuals")]
     public GameObject shapePrefab; // e.g. circle, triangle, etc.

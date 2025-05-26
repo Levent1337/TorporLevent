@@ -190,6 +190,17 @@ public class GridManager : MonoBehaviour
         float centerZ = (height - 1) * spacing / 2f;
         return new Vector3(centerX, 0f, centerZ);
     }
+    public Color GetPlayerColor(int playerId)
+    {
+        switch (playerId)
+        {
+            case 1: return player1ZoneColor;
+            case 2: return player2ZoneColor;
+            case 3: return player3ZoneColor;
+            case 4: return player4ZoneColor;
+            default: return Color.white;
+        }
+    }
 
 
 }

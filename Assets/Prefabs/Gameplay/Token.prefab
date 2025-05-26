@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 725444930541174115}
   - component: {fileID: 1117754765422428897}
+  - component: {fileID: -840984147258454363}
   m_Layer: 0
   m_Name: Token
   m_TagString: Untagged
@@ -48,3 +49,25 @@ MonoBehaviour:
   currentHealth: 0
   isDefending: 0
   ownerId: 0
+  hoverUI: {fileID: 4506020157993237030, guid: 989229a0b067b2646ac287c09c6e49fc, type: 3}
+--- !u!65 &-840984147258454363
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1905317818780163437}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

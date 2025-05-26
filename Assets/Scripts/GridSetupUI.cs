@@ -26,12 +26,12 @@ public class GridSetupUI : MonoBehaviour
         startButton.onClick.AddListener(ApplySettingsAndStart);
 
         // Default values
-        widthInput.text = "6";
-        heightInput.text = "6";
-        zoneWidthInput.text = "6";
-        zoneHeightInput.text = "3";
+        widthInput.text = "12";
+        heightInput.text = "12";
+        zoneWidthInput.text = "3";
+        zoneHeightInput.text = "2";
         playerCountInput.text = "2";
-        tokensPerPlayerInput.text = "3";
+        tokensPerPlayerInput.text = "4";
     }
 
     void ApplySettingsAndStart()
@@ -75,7 +75,7 @@ public class GridSetupUI : MonoBehaviour
             {
                 playerName = $"Player {i + 1}",
                 tokensToPlace = tokensToPlace,
-                playerColor = defaultColors[i]
+                
             });
         }
 
