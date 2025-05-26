@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour
         gridManager.numPlayers = players.Count;
         AssignPlacementZones();
         Debug.Log($"Placement phase started. {players[currentPlayerIndex].playerName}'s turn.");
+        UpdateTurnUI();
     }
 
     void AssignPlacementZones()
@@ -132,8 +133,8 @@ public class GameManager : MonoBehaviour
 
         Debug.Log($"{currentPlayer.playerName} placed a token.");
 
-        if (currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
-        {
+        if(currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
+{
             currentPlayerIndex++;
             if (currentPlayerIndex >= players.Count)
             {
@@ -143,12 +144,15 @@ public class GameManager : MonoBehaviour
             else
             {
                 Debug.Log($"{players[currentPlayerIndex].playerName}'s turn to place tokens.");
+                UpdateTurnUI(); // Update for next player
             }
         }
-        else
+else
         {
             Debug.Log($"{currentPlayer.playerName}, place your next token.");
+            UpdateTurnUI(); // Same player continues placing
         }
+
     }
 
     void StartCombatPhase()
@@ -159,6 +163,8 @@ public class GameManager : MonoBehaviour
         turnNumber = 1;
 
         Debug.Log($"Combat phase started. Player {CurrentPlayerId}'s turn.");
+        UpdateTurnUI();
+        UpdateAPUI();
     }
 
     public void UseActionPoint()
@@ -166,6 +172,7 @@ public class GameManager : MonoBehaviour
         actionPoints--;
         if (actionPoints <= 0)
             EndTurn();
+        UpdateAPUI();
     }
 
     public void EndTurn()
@@ -185,6 +192,8 @@ public class GameManager : MonoBehaviour
         ResetDefenders(CurrentPlayerId);
 
         Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
+        UpdateTurnUI();
+        UpdateAPUI();
     }
 
     public void ResetDefenders(int playerId)
@@ -238,5 +247,16 @@ public class GameManager : MonoBehaviour
     private bool PlayerHasTokens(int playerId)
     {
         return activeTokensByPlayer.ContainsKey(playerId) && activeTokensByPlayer[playerId].Count > 0;
+    }
+    private void UpdateTurnUI()
+    {
+        var player = players[currentPlayerIndex];
+        var color = GridManager.Instance.GetPlayerColor(CurrentPlayerId);
+        FindFirstObjectByType<GameplayUIController>()?.UpdateTurnIndicator(player.playerName, color);
+
+    }
+    private void UpdateAPUI()
+    {
+        FindFirstObjectByType<GameplayUIController>()?.UpdateAPIndicator(actionPoints);
     }
 }
