@@ -39,9 +39,15 @@ public class Token : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
-        currentHealth -= amount;
+        int actualDefense = isDefending ? data.defense * 2 : data.defense;
+        int rawDamage = amount - actualDefense;
+        int damage = Mathf.Max(rawDamage, 0);
+        currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0);
+
+        Debug.Log($"{name} took {damage} damage (raw {amount}, defense {actualDefense})");
     }
+
 
     public void SetSelected(bool selected)
     {
@@ -54,6 +60,11 @@ public class Token : MonoBehaviour
 
     public void TryInteractWith(Tile targetTile)
     {
+        if (isDefending)
+        {
+            Debug.Log($"{name} is defending and cannot act.");
+            return;
+        }
         if (!GameManager.Instance.IsPlayerTurn(ownerId))
         {
             Debug.Log("Not your turn.");
@@ -78,19 +89,8 @@ public class Token : MonoBehaviour
 
             if (enemy != null && enemy.ownerId != ownerId)
             {
-                if (!enemy.isDefending)
-                {
-                    Debug.Log("Attacking enemy!");
-                    Attack(enemy);
-                }
-                else
-                {
-                    Debug.Log("Enemy is defending. No attack.");
-                }
-            }
-            else
-            {
-                Debug.Log("Target is not an enemy.");
+                Debug.Log("Attacking enemy!");
+                Attack(enemy); // Let the damage logic handle defending
             }
         }
         else
@@ -127,11 +127,9 @@ public class Token : MonoBehaviour
 
     public void Attack(Token defender)
     {
-        int rawDamage = data.attack - defender.data.defense;
-        int damage = Mathf.Max(rawDamage, 0);
-        defender.TakeDamage(damage);
+        defender.TakeDamage(data.attack); // just pass attack stat!
 
-        Debug.Log($"{name} attacked {defender.name} for {damage} damage.");
+        Debug.Log($"{name} attacked {defender.name} with {data.attack} attack.");
 
         bool defenderDied = !defender.IsAlive;
         Tile defenderTile = defender.CurrentTile();
@@ -139,13 +137,13 @@ public class Token : MonoBehaviour
         if (defenderDied)
         {
             defender.Die();
-
             if (defenderTile != null)
-                MoveTo(defenderTile, consumeAP: false); 
+                MoveTo(defenderTile, consumeAP: false);
         }
 
-        TokenSelector.Instance.ConsumeAP(); 
+        TokenSelector.Instance.ConsumeAP();
     }
+
 
 
     public void Defend()
@@ -172,5 +170,10 @@ public class Token : MonoBehaviour
         if (tile == null)
             Debug.LogWarning($"{name} is not on a valid tile!");
         return tile;
+    }
+    public void ResetDefending()
+    {
+        isDefending = false;
+        Debug.Log($"{name} is no longer defending.");
     }
 }

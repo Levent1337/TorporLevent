@@ -42,7 +42,6 @@ public class TokenSelector : MonoBehaviour
                 {
                     if (selectedToken != null && clickedToken != selectedToken)
                     {
-                        // Try interacting with tile under enemy token
                         Tile enemyTile = clickedToken.CurrentTile();
                         if (enemyTile != null)
                         {
@@ -52,7 +51,6 @@ public class TokenSelector : MonoBehaviour
                     }
                     else
                     {
-                        // Try selecting your own token
                         TrySelectToken(clickedToken);
                         return;
                     }
@@ -65,7 +63,6 @@ public class TokenSelector : MonoBehaviour
             }
         }
     }
-
 
     void TrySelectToken(Token token)
     {
@@ -100,5 +97,14 @@ public class TokenSelector : MonoBehaviour
         {
             DeselectToken();
         }
+    }
+
+    public Token GetSelectedToken()
+    {
+        return selectedToken;
+    }
+    public void ForceDeselect()
+    {
+        DeselectToken();
     }
 }

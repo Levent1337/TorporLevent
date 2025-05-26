@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    [HideInInspector] public TokenData selectedTokenData = null;
 
     public enum GamePhase
     {
@@ -23,7 +24,8 @@ public class GameManager : MonoBehaviour
     public class PlayerData
     {
         public string playerName;
-        public List<TokenData> tokensToPlace;
+        [HideInInspector] public List<TokenData> tokensPlaced = new List<TokenData>();
+        public int tokensToPlace = 3; 
         [HideInInspector] public List<Tile> allowedTiles;
     }
 
@@ -94,8 +96,11 @@ public class GameManager : MonoBehaviour
 
         var currentPlayer = players[currentPlayerIndex];
 
-        if (currentTokenIndex >= currentPlayer.tokensToPlace.Count)
+        if (selectedTokenData == null)
+        {
+            Debug.Log("No token selected yet.");
             return;
+        }
 
         if (!currentPlayer.allowedTiles.Contains(tile))
         {
@@ -109,7 +114,13 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        TokenData data = currentPlayer.tokensToPlace[currentTokenIndex];
+        if (currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
+        {
+            Debug.Log("You have already placed all your tokens.");
+            return;
+        }
+
+        TokenData data = selectedTokenData;
         if (data == null)
         {
             Debug.LogError("TokenData is null.");
@@ -129,14 +140,15 @@ public class GameManager : MonoBehaviour
 
         activeTokensByPlayer[ownerId].Add(token);
 
+        // Record that this token was placed
+        currentPlayer.tokensPlaced.Add(data);
+        selectedTokenData = null;
+
         Debug.Log($"{currentPlayer.playerName} placed {data.tokenName}");
 
-        currentTokenIndex++;
-
-        // Check if current player is done
-        if (currentTokenIndex >= currentPlayer.tokensToPlace.Count)
+        // Check if player finished placing all allowed tokens
+        if (currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
         {
-            currentTokenIndex = 0;
             currentPlayerIndex++;
 
             if (currentPlayerIndex >= players.Count)
@@ -154,6 +166,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"{currentPlayer.playerName}, place your next token.");
         }
     }
+
 
 
     void StartCombatPhase()
@@ -178,6 +191,8 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
+        TokenSelector.Instance?.ForceDeselect();
+
         do
         {
             currentPlayerIndex++;
@@ -189,7 +204,20 @@ public class GameManager : MonoBehaviour
         turnNumber++;
         actionPoints = 4;
 
+        ResetDefenders(CurrentPlayerId);
+
         Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
+    }
+
+    private void ResetDefenders(int playerId)
+    {
+        if (activeTokensByPlayer.TryGetValue(playerId, out var tokens))
+        {
+            foreach (var token in tokens)
+            {
+                token.ResetDefending();
+            }
+        }
     }
     public bool IsPlayerTurn(int playerId)
     {
