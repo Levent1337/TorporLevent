@@ -4,7 +4,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    [HideInInspector] public TokenData selectedTokenData = null;
 
     public enum GamePhase
     {
@@ -14,25 +13,27 @@ public class GameManager : MonoBehaviour
     }
 
     public GamePhase CurrentPhase { get; private set; } = GamePhase.Placement;
-    private Dictionary<int, List<Token>> activeTokensByPlayer = new Dictionary<int, List<Token>>();
 
     [Header("Setup")]
     public GridManager gridManager;
     public GameObject tokenPrefab;
+    [HideInInspector] public TokenData selectedTokenData;
 
     [System.Serializable]
     public class PlayerData
     {
         public string playerName;
+        public int tokensToPlace = 3;
+        public Color playerColor = Color.white;
         [HideInInspector] public List<TokenData> tokensPlaced = new List<TokenData>();
-        public int tokensToPlace = 3; 
         [HideInInspector] public List<Tile> allowedTiles;
     }
 
     [Header("Players")]
     public List<PlayerData> players = new List<PlayerData>();
+
+    private Dictionary<int, List<Token>> activeTokensByPlayer = new Dictionary<int, List<Token>>();
     private int currentPlayerIndex = 0;
-    private int currentTokenIndex = 0;
 
     [Header("Turn Info")]
     public int actionPoints = 4;
@@ -41,26 +42,16 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance != null && Instance != this)
-        {
             Destroy(gameObject);
-        }
         else
-        {
             Instance = this;
-        }
     }
 
-    void Start()
-    {
-        StartPlacementPhase();
-    }
-
-    void StartPlacementPhase()
+    public void StartPlacementPhase()
     {
         CurrentPhase = GamePhase.Placement;
         gridManager.numPlayers = players.Count;
         AssignPlacementZones();
-
         Debug.Log($"Placement phase started. {players[currentPlayerIndex].playerName}'s turn.");
     }
 
@@ -70,18 +61,10 @@ public class GameManager : MonoBehaviour
         {
             switch (i)
             {
-                case 0:
-                    players[i].allowedTiles = gridManager.player1StartTiles;
-                    break;
-                case 1:
-                    players[i].allowedTiles = gridManager.player2StartTiles;
-                    break;
-                case 2:
-                    players[i].allowedTiles = gridManager.player3StartTiles;
-                    break;
-                case 3:
-                    players[i].allowedTiles = gridManager.player4StartTiles;
-                    break;
+                case 0: players[i].allowedTiles = gridManager.player1StartTiles; break;
+                case 1: players[i].allowedTiles = gridManager.player2StartTiles; break;
+                case 2: players[i].allowedTiles = gridManager.player3StartTiles; break;
+                case 3: players[i].allowedTiles = gridManager.player4StartTiles; break;
             }
         }
     }
@@ -98,59 +81,79 @@ public class GameManager : MonoBehaviour
 
         if (selectedTokenData == null)
         {
-            Debug.Log("No token selected yet.");
+            Debug.LogWarning("No token selected.");
             return;
         }
 
         if (!currentPlayer.allowedTiles.Contains(tile))
         {
-            Debug.Log("Tile not in your placement zone.");
+            Debug.LogWarning("Tile not in your placement zone.");
             return;
         }
 
         if (tile.IsOccupied)
         {
-            Debug.Log("Tile already occupied.");
+            Debug.LogWarning("Tile already occupied.");
             return;
         }
 
         if (currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
         {
-            Debug.Log("You have already placed all your tokens.");
+            Debug.LogWarning("You have already placed all your tokens.");
             return;
         }
 
-        TokenData data = selectedTokenData;
-        if (data == null)
+       
+        if (tokenPrefab == null)
         {
-            Debug.LogError("TokenData is null.");
+            Debug.LogError("tokenPrefab is null in GameManager!");
             return;
         }
 
-        // Instantiate and initialize the token
         GameObject tokenGO = Instantiate(tokenPrefab, tile.transform.position, Quaternion.identity);
+        Debug.Log("Spawned tokenGO: " + tokenGO.name);
+        Debug.Log("Searching for Token component...");
+
         Token token = tokenGO.GetComponent<Token>();
+        if (token == null)
+        {
+            token = tokenGO.GetComponentInChildren<Token>();
+            if (token == null)
+            {
+                Debug.LogError("NO TOKEN SCRIPT FOUND ON prefab or any children.");
+                return;
+            }
+            else
+            {
+                Debug.Log("Token script found on a child.");
+            }
+        }
+        else
+        {
+            Debug.Log("Token script found on root.");
+        }
+
         int ownerId = currentPlayerIndex + 1;
-        token.Initialize(data, ownerId);
+        Color baseColor = currentPlayer.playerColor;
+        Color darkerColor = baseColor * 0.6f;
+        darkerColor.a = 1f;
+        selectedTokenData.tokenColor = darkerColor;
+
+        token.Initialize(selectedTokenData, ownerId);
         tile.PlaceToken(token);
 
-        // Track this token for the player
         if (!activeTokensByPlayer.ContainsKey(ownerId))
             activeTokensByPlayer[ownerId] = new List<Token>();
 
         activeTokensByPlayer[ownerId].Add(token);
-
-        // Record that this token was placed
-        currentPlayer.tokensPlaced.Add(data);
+        currentPlayer.tokensPlaced.Add(selectedTokenData);
         selectedTokenData = null;
 
-        Debug.Log($"{currentPlayer.playerName} placed {data.tokenName}");
+        Debug.Log($"{currentPlayer.playerName} placed a token.");
 
-        // Check if player finished placing all allowed tokens
         if (currentPlayer.tokensPlaced.Count >= currentPlayer.tokensToPlace)
         {
             currentPlayerIndex++;
-
             if (currentPlayerIndex >= players.Count)
             {
                 Debug.Log("All players have placed their tokens.");
@@ -168,7 +171,6 @@ public class GameManager : MonoBehaviour
     }
 
 
-
     void StartCombatPhase()
     {
         CurrentPhase = GamePhase.Combat;
@@ -182,11 +184,8 @@ public class GameManager : MonoBehaviour
     public void UseActionPoint()
     {
         actionPoints--;
-
         if (actionPoints <= 0)
-        {
             EndTurn();
-        }
     }
 
     public void EndTurn()
@@ -205,25 +204,19 @@ public class GameManager : MonoBehaviour
         actionPoints = 4;
 
         ResetDefenders(CurrentPlayerId);
-
         Debug.Log($"Turn {turnNumber}: Player {CurrentPlayerId}'s turn.");
     }
 
-    private void ResetDefenders(int playerId)
+    public void ResetDefenders(int playerId)
     {
         if (activeTokensByPlayer.TryGetValue(playerId, out var tokens))
         {
             foreach (var token in tokens)
-            {
                 token.ResetDefending();
-            }
         }
     }
-    public bool IsPlayerTurn(int playerId)
-    {
-        return playerId == CurrentPlayerId;
-    }
 
+    public bool IsPlayerTurn(int playerId) => playerId == CurrentPlayerId;
     public int CurrentPlayerId => currentPlayerIndex + 1;
 
     public void EndGame(string winnerName)
@@ -231,6 +224,7 @@ public class GameManager : MonoBehaviour
         CurrentPhase = GamePhase.GameOver;
         Debug.Log($"Game Over! {winnerName} wins!");
     }
+
     public void OnTokenDeath(Token token)
     {
         if (activeTokensByPlayer.ContainsKey(token.ownerId))
@@ -238,13 +232,12 @@ public class GameManager : MonoBehaviour
             activeTokensByPlayer[token.ownerId].Remove(token);
 
             if (activeTokensByPlayer[token.ownerId].Count == 0)
-            {
                 Debug.Log($"{players[token.ownerId - 1].playerName} has no more tokens.");
-            }
 
             CheckWinCondition();
         }
     }
+
     void CheckWinCondition()
     {
         List<int> playersWithTokens = new List<int>();
@@ -261,6 +254,7 @@ public class GameManager : MonoBehaviour
             EndGame(winnerName);
         }
     }
+
     private bool PlayerHasTokens(int playerId)
     {
         return activeTokensByPlayer.ContainsKey(playerId) && activeTokensByPlayer[playerId].Count > 0;

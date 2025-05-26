@@ -38,12 +38,10 @@ public class GridManager : MonoBehaviour
             Instance = this;
     }
 
-    void Start()
-    {
-        GenerateGrid();
-    }
+  
 
-    void GenerateGrid()
+
+    public void GenerateGrid()
     {
         grid = new Tile[width, height];
 
@@ -148,7 +146,50 @@ public class GridManager : MonoBehaviour
 
 
 
+    public void CenterCameraAboveGrid()
+    {
+        Vector3 center = GetGridCenter();
 
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        // Assume orthographic camera looking straight down
+        if (!cam.orthographic)
+        {
+            Debug.LogWarning("Camera must be orthographic for top-down view.");
+            return;
+        }
+
+        // Move camera directly above center
+        Vector3 camPos = center;
+        camPos.y = 10f; // default height, will adjust below
+        cam.transform.position = camPos;
+        cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        // Fit the grid in view
+        float gridAspect = (float)width / height;
+        float screenAspect = (float)Screen.width / Screen.height;
+
+        // Determine which size (width or height) is the limiting factor
+        float neededHalfSize = spacing * Mathf.Max(width, height) / 2f;
+
+        if (gridAspect > screenAspect)
+        {
+            // Wider than screen, fit width
+            cam.orthographicSize = neededHalfSize / screenAspect;
+        }
+        else
+        {
+            // Taller or square, fit height
+            cam.orthographicSize = neededHalfSize;
+        }
+    }
+    public Vector3 GetGridCenter()
+    {
+        float centerX = (width - 1) * spacing / 2f;
+        float centerZ = (height - 1) * spacing / 2f;
+        return new Vector3(centerX, 0f, centerZ);
+    }
 
 
 }
